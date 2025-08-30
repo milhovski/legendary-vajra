@@ -29,9 +29,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,8 +51,8 @@ public class Vajra extends DiggerItem {
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable TooltipContext context,
                                 @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        int radius = RadiusMap.getVajraRadius().getOrDefault(stack.getItem(), 0);
-        int width = radius * 2 + 1;
+        int mode = stack.getOrDefault(CDataComponents.RADIUS_MODE.get(), 0);
+        int width = (mode == 0 ? 1 : 3);
         int energy = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
         boolean silk = stack.getOrDefault(CDataComponents.SILK_MODE.get(), false);
 
@@ -63,7 +63,7 @@ public class Vajra extends DiggerItem {
                 .append(Component.literal(silk ? "Silk Touch" : "Normal").withStyle(ChatFormatting.GREEN)));
 
         tooltip.add(Component.literal("Area: ").withStyle(ChatFormatting.LIGHT_PURPLE)
-                .append(Component.literal(width + "x3").withStyle(ChatFormatting.GREEN)));
+                .append(Component.literal(width + "x" + width).withStyle(ChatFormatting.GREEN)));
     }
 
     @Override
@@ -77,8 +77,13 @@ public class Vajra extends DiggerItem {
     }
 
     @Override
+    public boolean isFoil(@NotNull ItemStack stack) {
+        return true;
+    }
+
+    @Override
     public boolean isBarVisible(@NotNull ItemStack stack) {
-        return stack.getOrDefault(CDataComponents.ENERGY.get(), 0) >= 0;
+        return stack.getOrDefault(CDataComponents.ENERGY.get(), 0) > 0;
     }
 
     @Override
@@ -108,9 +113,21 @@ public class Vajra extends DiggerItem {
                 );
             }
             return InteractionResultHolder.success(stack);
-        }
+        } else {
+            int currentRadius = stack.getOrDefault(CDataComponents.RADIUS_MODE.get(), 0);
+            int nextRadius = (currentRadius == 0 ? 1 : 0);
+            stack.set(CDataComponents.RADIUS_MODE.get(), nextRadius);
 
-        return super.use(level, player, hand);
+            if (!level.isClientSide) {
+                int width = nextRadius == 0 ? 1 : 3;
+                player.displayClientMessage(
+                        Component.literal("Area: " + width + "x" + width)
+                                .withStyle(ChatFormatting.GREEN),
+                        true
+                );
+            }
+            return InteractionResultHolder.success(stack);
+        }
     }
 
     @Override
@@ -132,9 +149,13 @@ public class Vajra extends DiggerItem {
         return stack;
     }
 
-    public static List<BlockPos> getBlocksToBeDestroyed(int range, BlockPos initialBlockPos, LivingEntity entity) {
+    public static List<BlockPos> getBlocksToBeDestroyed(ItemStack stack, BlockPos initialBlockPos, LivingEntity entity) {
         List<BlockPos> positions = new ArrayList<>();
         Level level = entity.level();
+
+        int mode = stack.getOrDefault(CDataComponents.RADIUS_MODE.get(), 0);
+        int range = (mode == 0 ? 0 : 1);
+
         BlockHitResult traceResult = level.clip(new ClipContext(
                 entity.getEyePosition(1f),
                 entity.getEyePosition(1f).add(entity.getViewVector(1f).scale(6f)),
@@ -152,7 +173,7 @@ public class Vajra extends DiggerItem {
                     positions.add(initialBlockPos.offset(dx, 0, dy));
                 } else if (axis == Direction.Axis.X) {
                     positions.add(initialBlockPos.offset(0, dy, dx));
-                } else { // Z
+                } else {
                     positions.add(initialBlockPos.offset(dx, dy, 0));
                 }
             }

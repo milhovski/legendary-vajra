@@ -37,11 +37,11 @@ public class VajraOverlayRenderer {
         BlockPos origin = blockHit.getBlockPos();
         Direction side = blockHit.getDirection();
 
-        AABB area = AreaBoxCalculator.get3x3Box(mc.level, origin, side);
+        AABB area = AreaBoxCalculator.getAreaBox(mc.level, origin, side, heldItem);
         if (area == null) return;
 
         Vec3 cameraPos = event.getCamera().getPosition();
-        AABB renderBox = area.move(-cameraPos.x, -cameraPos.y, -cameraPos.z).inflate(0.002);
+        AABB renderBox = area.move(-cameraPos.x, -cameraPos.y, -cameraPos.z).inflate(0.01f);
 
         Matrix4f pose = new Matrix4f();
         MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();

@@ -47,7 +47,7 @@ public class CEvents {
         boolean isSneaking = player.isCrouching();
         int radius = isSneaking ? 0 : RadiusMap.getVajraRadius().getOrDefault(stack.getItem(), 0);
 
-        List<BlockPos> blocksToBreak = Vajra.getBlocksToBeDestroyed(radius, pos, serverPlayer);
+        List<BlockPos> blocksToBreak = Vajra.getBlocksToBeDestroyed(stack, pos, serverPlayer);
         boolean creative = player.getAbilities().instabuild;
 
         for (BlockPos targetPos : blocksToBreak) {

@@ -32,6 +32,14 @@ public class CDataComponents {
                     .build()
     );
 
+    public static final Supplier<DataComponentType<Integer>> RADIUS_MODE = COMPONENTS.register(
+            "radius_mode",
+            () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build()
+    );
+
     public static void init(IEventBus bus) {
         COMPONENTS.register(bus);
     }
