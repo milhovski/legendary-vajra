@@ -65,11 +65,15 @@ configurations {
 }
 
 repositories {
-
+    maven {
+        url "https://cursemaven.com"
+    }
 }
 
 dependencies {
-
+    implementation "curse.maven:rhino-416294:6886923"
+    implementation "curse.maven:kubejs-238086:5810100"
+    implementation "curse.maven:mekanism-268560:6895130"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
