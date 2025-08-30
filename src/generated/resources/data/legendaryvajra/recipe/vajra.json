@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "A": {
+      "item": "minecraft:nether_star"
+    },
+    "B": {
+      "item": "minecraft:netherite_pickaxe"
+    },
+    "C": {
+      "item": "minecraft:netherite_block"
+    },
+    "D": {
+      "item": "minecraft:netherite_ingot"
+    }
+  },
+  "pattern": [
+    "AAA",
+    "ABD",
+    "ADC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "legendaryvajra:vajra"
+  }
+}

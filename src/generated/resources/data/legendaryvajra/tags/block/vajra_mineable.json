@@ -1,0 +1,11 @@
+{
+  "values": [
+    "#minecraft:mineable/pickaxe",
+    "#minecraft:mineable/shovel",
+    "#minecraft:mineable/axe",
+    "#minecraft:mineable/hoe",
+    "minecraft:obsidian",
+    "minecraft:crying_obsidian",
+    "minecraft:glowstone"
+  ]
+}
