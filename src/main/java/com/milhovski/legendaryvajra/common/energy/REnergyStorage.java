@@ -6,7 +6,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
-public record REnergyStorage(ItemStack stack, int capacity, int maxReceive, int maxExtract) implements IEnergyStorage {
+public record REnergyStorage(ItemStack stack, int capacity, int maxReceive,
+                             int maxExtract) implements IEnergyStorage {
 
     private int getStored() {
         return stack.getOrDefault(CDataComponents.ENERGY.get(), 0);

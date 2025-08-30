@@ -6,6 +6,7 @@ import com.milhovski.legendaryvajra.init.CDataComponents;
 import com.milhovski.legendaryvajra.init.CItems;
 
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -15,7 +16,7 @@ public class LegendaryVajra {
 
     public static final String MOD_ID = "legendaryvajra";
 
-    public LegendaryVajra(IEventBus bus) {
+    public LegendaryVajra(IEventBus bus, ModContainer container) {
         bus.addListener(this::registerCaps);
         CDataComponents.init(bus);
         CItems.init(bus);

@@ -2,6 +2,7 @@ package com.milhovski.legendaryvajra.utils;
 
 import com.milhovski.legendaryvajra.Config;
 import com.milhovski.legendaryvajra.init.CItems;
+
 import net.minecraft.world.item.Item;
 
 import java.util.Map;

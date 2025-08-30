@@ -28,8 +28,8 @@ public class OverlayRenderer {
         for (int[] edge : edges) {
             float[] p1 = corners[edge[0]];
             float[] p2 = corners[edge[1]];
-            buffer.addVertex(matrix, p1[0], p1[1], p1[2]).setColor(r, g, b, a);
-            buffer.addVertex(matrix, p2[0], p2[1], p2[2]).setColor(r, g, b, a);
+            buffer.addVertex(matrix, p1[0], p1[1], p1[2]).setColor(r, g, b, a).setNormal(0, 1, 0);
+            buffer.addVertex(matrix, p2[0], p2[1], p2[2]).setColor(r, g, b, a).setNormal(0, 1, 0);
         }
     }
 

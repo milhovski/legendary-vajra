@@ -1,5 +1,6 @@
 package com.milhovski.legendaryvajra.common.item;
 
+import com.milhovski.legendaryvajra.common.tier.EToolMaterials;
 import com.milhovski.legendaryvajra.init.CDataComponents;
 import com.milhovski.legendaryvajra.common.tag.CTags;
 import com.milhovski.legendaryvajra.utils.RadiusMap;
@@ -24,10 +25,13 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
+import net.neoforged.neoforge.capabilities.ItemCapability;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,7 +43,8 @@ public class Vajra extends DiggerItem {
     private static final int ENERGY_PER_BLOCK = 1000;
     private static final int MAX_ENERGY = 7_000_000;
 
-    public Vajra(Tier tier, Properties properties) {
+    public Vajra(Tier tier, Properties properties,
+                 ItemCapability<IEnergyStorage, Void> itemCapability) {
         super(tier, CTags.Blocks.VAJRA_MINEABLE, properties);
     }
 
@@ -73,7 +78,7 @@ public class Vajra extends DiggerItem {
 
     @Override
     public boolean isBarVisible(@NotNull ItemStack stack) {
-        return stack.getOrDefault(CDataComponents.ENERGY.get(), 0) > 0;
+        return stack.getOrDefault(CDataComponents.ENERGY.get(), 0) >= 0;
     }
 
     @Override
@@ -160,13 +165,28 @@ public class Vajra extends DiggerItem {
     public float getDestroySpeed(@NotNull ItemStack stack, @NotNull BlockState state) {
         if (!state.is(CTags.Blocks.VAJRA_MINEABLE)) return super.getDestroySpeed(stack, state);
         int energy = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
-        return energy >= ENERGY_PER_BLOCK ? 100000F : 0F;
+        return energy >= ENERGY_PER_BLOCK ? 100000F : Math.max(1.0F, EToolMaterials.VAJRA.getSpeed());
     }
 
     @Override
     public boolean mineBlock(@NotNull ItemStack stack, @NotNull Level level,
                              @NotNull BlockState state, @NotNull BlockPos pos,
                              @NotNull LivingEntity entity) {
+        if (level.isClientSide) return true;
+
+        int energy = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
+        if (energy < ENERGY_PER_BLOCK) {
+            ((EToolMaterials) getTier()).setSpeed(0);
+            return false;
+        }
+
+        stack.set(CDataComponents.ENERGY.get(), energy - ENERGY_PER_BLOCK);
+        ((EToolMaterials) getTier()).setSpeed(100000);
+
+        ItemStack tool = toolForDrops(stack, level.registryAccess());
+        Block.dropResources(state, level, pos, level.getBlockEntity(pos), entity, stack);
+        level.removeBlock(pos, false);
+
         return true;
     }
 

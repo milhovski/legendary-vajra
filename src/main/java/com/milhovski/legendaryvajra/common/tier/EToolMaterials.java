@@ -14,15 +14,17 @@ import java.util.function.Supplier;
 
 public enum EToolMaterials implements Tier {
 
-    VAJRA(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, Config.DurabilityVajra, 0f, 40f, 27, () -> Ingredient.EMPTY);
+    VAJRA(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, Config.DurabilityVajra, 9.0f, 40f, 27, () -> Ingredient.EMPTY);
 
     private final TagKey<Block> incorrect;
+    private float speed;
     private final int damage;
     private final int enchantmentValue;
     private final Supplier<Ingredient> ingredient;
 
     EToolMaterials(TagKey<Block> incorrect, int uses, float speed, float damage, int enchantmentValue, Supplier<Ingredient> ingredient) {
         this.incorrect = incorrect;
+        this.speed = speed;
         this.damage = (int) damage;
         this.enchantmentValue = enchantmentValue;
         this.ingredient = ingredient;
@@ -35,7 +37,11 @@ public enum EToolMaterials implements Tier {
 
     @Override
     public float getSpeed() {
-        return 1f;
+        return this.speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 
     @Override
