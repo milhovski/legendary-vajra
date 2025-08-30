@@ -3,7 +3,6 @@ package com.milhovski.legendaryvajra.common.item;
 import com.milhovski.legendaryvajra.common.tier.EToolMaterials;
 import com.milhovski.legendaryvajra.init.CDataComponents;
 import com.milhovski.legendaryvajra.common.tag.CTags;
-import com.milhovski.legendaryvajra.utils.RadiusMap;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -45,7 +44,7 @@ public class Vajra extends DiggerItem {
 
     public Vajra(Tier tier, Properties properties,
                  ItemCapability<IEnergyStorage, Void> itemCapability) {
-        super(tier, CTags.Blocks.VAJRA_MINEABLE, properties);
+        super(tier, CTags.Blocks.VAJRA_MINEABLE, properties.attributes(DiggerItem.createAttributes(tier, EToolMaterials.VAJRA.getAttackDamageBonus(), 1.6f)));
     }
 
     @Override
