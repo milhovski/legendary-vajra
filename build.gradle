@@ -71,6 +71,7 @@ repositories {
 }
 
 dependencies {
+    implementation "curse.maven:emi-580555:6420931"
     implementation "curse.maven:rhino-416294:6886923"
     implementation "curse.maven:kubejs-238086:5810100"
     implementation "curse.maven:mekanism-268560:6895130"

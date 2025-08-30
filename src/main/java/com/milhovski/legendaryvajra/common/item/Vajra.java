@@ -56,14 +56,14 @@ public class Vajra extends DiggerItem {
         int energy = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
         boolean silk = stack.getOrDefault(CDataComponents.SILK_MODE.get(), false);
 
-        tooltip.add(Component.literal("Energy: ").withStyle(ChatFormatting.LIGHT_PURPLE)
-                .append(Component.literal(energy + "/" + MAX_ENERGY).withStyle(ChatFormatting.GREEN)));
+        tooltip.add(Component.literal("Energy: ").withStyle(ChatFormatting.GOLD)
+                .append(Component.literal(energy + "/" + MAX_ENERGY).withStyle(ChatFormatting.GRAY)));
 
-        tooltip.add(Component.literal("Mode: ").withStyle(ChatFormatting.LIGHT_PURPLE)
-                .append(Component.literal(silk ? "Silk Touch" : "Normal").withStyle(ChatFormatting.GREEN)));
+        tooltip.add(Component.literal("Mode: ").withStyle(ChatFormatting.GOLD)
+                .append(Component.literal(silk ? "Silk Touch" : "Normal").withStyle(ChatFormatting.GRAY)));
 
-        tooltip.add(Component.literal("Area: ").withStyle(ChatFormatting.LIGHT_PURPLE)
-                .append(Component.literal(width + "x" + width).withStyle(ChatFormatting.GREEN)));
+        tooltip.add(Component.literal("Area: ").withStyle(ChatFormatting.GOLD)
+                .append(Component.literal(width + "x" + width).withStyle(ChatFormatting.GRAY)));
     }
 
     @Override
@@ -108,7 +108,7 @@ public class Vajra extends DiggerItem {
             if (!level.isClientSide) {
                 player.displayClientMessage(
                         Component.literal("Silk Touch: " + (!current ? "ON" : "OFF"))
-                                .withStyle(ChatFormatting.GREEN),
+                                .withStyle(ChatFormatting.GRAY),
                         true
                 );
             }
@@ -122,7 +122,7 @@ public class Vajra extends DiggerItem {
                 int width = nextRadius == 0 ? 1 : 3;
                 player.displayClientMessage(
                         Component.literal("Area: " + width + "x" + width)
-                                .withStyle(ChatFormatting.GREEN),
+                                .withStyle(ChatFormatting.GRAY),
                         true
                 );
             }
