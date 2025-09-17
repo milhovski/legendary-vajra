@@ -11,6 +11,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -25,9 +26,11 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
@@ -44,7 +47,14 @@ public class Vajra extends DiggerItem {
 
     public Vajra(Tier tier, Properties properties,
                  ItemCapability<IEnergyStorage, Void> itemCapability) {
-        super(tier, CTags.Blocks.VAJRA_MINEABLE, properties.attributes(DiggerItem.createAttributes(tier, EToolMaterials.VAJRA.getAttackDamageBonus(), 1.6f)));
+        super(tier, CTags.Blocks.VAJRA_MINEABLE,
+                properties.attributes(DiggerItem.createAttributes(
+                    tier, EToolMaterials.VAJRA.getAttackDamageBonus(), 1.6f)));
+    }
+
+    @Override
+    public @NotNull Component getName(@NotNull ItemStack stack) {
+        return super.getName(stack).copy().withStyle(Style.EMPTY.withColor(0xFFB3C6));
     }
 
     @Override
@@ -55,14 +65,16 @@ public class Vajra extends DiggerItem {
         int energy = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
         boolean silk = stack.getOrDefault(CDataComponents.SILK_MODE.get(), false);
 
-        tooltip.add(Component.literal("Energy: ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(energy + "/" + MAX_ENERGY).withStyle(ChatFormatting.GRAY)));
+        tooltip.add(Component.literal(energy + " / " + MAX_ENERGY + " ⚡")
+                .withStyle(ChatFormatting.AQUA));
 
-        tooltip.add(Component.literal("Mode: ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(silk ? "Silk Touch" : "Normal").withStyle(ChatFormatting.GRAY)));
+        tooltip.add(Component.literal("Silk Touch: ").withStyle(ChatFormatting.DARK_PURPLE)
+                .append(Component.literal(silk ? "On" : "Off")
+                        .withStyle(silk ? ChatFormatting.GREEN : ChatFormatting.RED)));
 
-        tooltip.add(Component.literal("Area: ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(width + "x" + width).withStyle(ChatFormatting.GRAY)));
+        tooltip.add(Component.literal("Area: ").withStyle(ChatFormatting.DARK_PURPLE)
+                .append(Component.literal(width + "x" + width)
+                        .withStyle(ChatFormatting.GREEN)));
     }
 
     @Override
@@ -155,6 +167,11 @@ public class Vajra extends DiggerItem {
         int mode = stack.getOrDefault(CDataComponents.RADIUS_MODE.get(), 0);
         int range = (mode == 0 ? 0 : 1);
 
+        if (range == 0) {
+            positions.add(initialBlockPos);
+            return positions;
+        }
+
         BlockHitResult traceResult = level.clip(new ClipContext(
                 entity.getEyePosition(1f),
                 entity.getEyePosition(1f).add(entity.getViewVector(1f).scale(6f)),
@@ -163,17 +180,27 @@ public class Vajra extends DiggerItem {
                 entity
         ));
 
-        if (traceResult.getType() == HitResult.Type.MISS) return positions;
+        Direction side;
 
-        Direction.Axis axis = traceResult.getDirection().getAxis();
+        if (traceResult.getType() == HitResult.Type.BLOCK && traceResult.getBlockPos().equals(initialBlockPos)) {
+            side = traceResult.getDirection();
+        } else {
+            Vec3 toCenter = Vec3.atCenterOf(initialBlockPos).subtract(entity.getEyePosition(1f));
+            side = Direction.getNearest(toCenter.x, toCenter.y, toCenter.z);
+        }
+
         for (int dx = -range; dx <= range; dx++) {
             for (int dy = -range; dy <= range; dy++) {
-                if (axis == Direction.Axis.Y) {
-                    positions.add(initialBlockPos.offset(dx, 0, dy));
-                } else if (axis == Direction.Axis.X) {
-                    positions.add(initialBlockPos.offset(0, dy, dx));
-                } else {
-                    positions.add(initialBlockPos.offset(dx, dy, 0));
+                switch (side) {
+                    case UP, DOWN -> {
+                        positions.add(initialBlockPos.offset(dx, 0, dy));
+                    }
+                    case NORTH, SOUTH -> {
+                        positions.add(initialBlockPos.offset(dx, dy, 0));
+                    }
+                    case EAST, WEST -> {
+                        positions.add(initialBlockPos.offset(0, dy, dx));
+                    }
                 }
             }
         }
@@ -185,7 +212,7 @@ public class Vajra extends DiggerItem {
     public float getDestroySpeed(@NotNull ItemStack stack, @NotNull BlockState state) {
         if (!state.is(CTags.Blocks.VAJRA_MINEABLE)) return super.getDestroySpeed(stack, state);
         int energy = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
-        return energy >= ENERGY_PER_BLOCK ? 100000F : Math.max(1.0F, EToolMaterials.VAJRA.getSpeed());
+        return energy >= ENERGY_PER_BLOCK ? 100000F : 3.0F;
     }
 
     @Override
@@ -193,21 +220,39 @@ public class Vajra extends DiggerItem {
                              @NotNull BlockState state, @NotNull BlockPos pos,
                              @NotNull LivingEntity entity) {
         if (level.isClientSide) return true;
+        if (!(entity instanceof Player player)) return true;
 
         int energy = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
-        if (energy < ENERGY_PER_BLOCK) {
-            ((EToolMaterials) getTier()).setSpeed(0);
-            return false;
+        if (energy < ENERGY_PER_BLOCK) return true;
+
+        boolean creative = player.getAbilities().instabuild;
+        ItemStack tool = toolForDrops(stack, level.registryAccess());
+
+        if (!creative) {
+            stack.set(CDataComponents.ENERGY.get(), energy - ENERGY_PER_BLOCK);
+        }
+        Block.dropResources(state, level, pos, level.getBlockEntity(pos), player, tool);
+        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+
+        List<BlockPos> blocksToBreak = getBlocksToBeDestroyed(stack, pos, entity);
+        for (BlockPos targetPos : blocksToBreak) {
+            if (targetPos.equals(pos)) continue;
+
+            BlockState targetState = level.getBlockState(targetPos);
+            if (targetState.isAir() || targetState.is(Blocks.BEDROCK) || !targetState.is(CTags.Blocks.VAJRA_MINEABLE))
+                continue;
+
+            if (!creative) {
+                int e = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
+                if (e < ENERGY_PER_BLOCK) break;
+                stack.set(CDataComponents.ENERGY.get(), e - ENERGY_PER_BLOCK);
+            }
+
+            Block.dropResources(targetState, level, targetPos, level.getBlockEntity(targetPos), player, tool);
+            level.setBlock(targetPos, Blocks.AIR.defaultBlockState(), 3);
         }
 
-        stack.set(CDataComponents.ENERGY.get(), energy - ENERGY_PER_BLOCK);
-        ((EToolMaterials) getTier()).setSpeed(100000);
-
-        ItemStack tool = toolForDrops(stack, level.registryAccess());
-        Block.dropResources(state, level, pos, level.getBlockEntity(pos), entity, stack);
-        level.removeBlock(pos, false);
-
-        return true;
+        return false;
     }
 
 }

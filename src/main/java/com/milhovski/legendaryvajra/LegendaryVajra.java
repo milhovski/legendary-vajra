@@ -26,7 +26,7 @@ public class LegendaryVajra {
     public void registerCaps(RegisterCapabilitiesEvent event) {
         event.registerItem(
                 Capabilities.EnergyStorage.ITEM,
-                (stack, ctx) -> new REnergyStorage(stack, 7_000_000, Integer.MAX_VALUE, 1000),
+                (stack, ctx) -> new REnergyStorage(stack, 7_000_000, 50000, 1000),
                 CItems.VAJRA.get()
         );
     }
