@@ -1,6 +1,7 @@
 package com.milhovski.legendaryvajra.init;
 
 import com.milhovski.legendaryvajra.LegendaryVajra;
+import com.milhovski.legendaryvajra.common.item.NeoVajra;
 import com.milhovski.legendaryvajra.common.item.Vajra;
 import com.milhovski.legendaryvajra.common.tier.EToolMaterials;
 
@@ -17,6 +18,11 @@ public class CItems {
 
     public static final DeferredItem<Item> VAJRA = ITEMS.register("vajra",
             () -> new Vajra(EToolMaterials.VAJRA, new Item.Properties()
+                    .stacksTo(1).rarity(Rarity.RARE),
+                    Capabilities.EnergyStorage.ITEM));
+
+    public static final DeferredItem<Item> NEOVAJRA = ITEMS.register("neovajra",
+            () -> new NeoVajra(EToolMaterials.NEOVAJRA, new Item.Properties()
                     .stacksTo(1).rarity(Rarity.EPIC),
                     Capabilities.EnergyStorage.ITEM));
 

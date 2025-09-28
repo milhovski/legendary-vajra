@@ -14,7 +14,8 @@ import java.util.function.Supplier;
 
 public enum EToolMaterials implements Tier {
 
-    VAJRA(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, Config.DurabilityVajra, 9.0f, 20.0F, 27, () -> Ingredient.EMPTY);
+    VAJRA(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, Config.DurabilityVajra, 9.0f, 10.0F, 27, () -> Ingredient.EMPTY),
+    NEOVAJRA(BlockTags.INCORRECT_FOR_NETHERITE_TOOL, Config.DurabilityVajra, 9.0f, 20.0F, 27, () -> Ingredient.EMPTY);
 
     private final TagKey<Block> incorrect;
     private float speed;

@@ -3,8 +3,6 @@ package com.milhovski.legendaryvajra.datagen;
 import com.milhovski.legendaryvajra.LegendaryVajra;
 import com.milhovski.legendaryvajra.common.tag.CTags;
 
-import mekanism.common.Mekanism;
-import mekanism.common.tags.MekanismTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;

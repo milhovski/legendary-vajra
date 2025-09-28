@@ -34,6 +34,14 @@ public class CRecipeProvider extends RecipeProvider implements IConditionBuilder
                 .define('C', Items.NETHERITE_BLOCK)
                 .unlockedBy("has_star", InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHER_STAR))
                 .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, CItems.NEOVAJRA.get())
+                .pattern("CCC")
+                .pattern("CBC")
+                .pattern("CCC")
+                .define('B', CItems.VAJRA)
+                .define('C', Items.NETHERITE_BLOCK)
+                .unlockedBy("has_star", InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHER_STAR))
+                .save(recipeOutput);
     }
 
 }

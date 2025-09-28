@@ -1,11 +1,11 @@
 package com.milhovski.legendaryvajra.common.item;
 
+import com.milhovski.legendaryvajra.common.tag.CTags;
 import com.milhovski.legendaryvajra.common.tier.EToolMaterials;
 import com.milhovski.legendaryvajra.init.CDataComponents;
-import com.milhovski.legendaryvajra.common.tag.CTags;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -22,34 +22,37 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Vajra extends DiggerItem {
+public class NeoVajra extends DiggerItem {
 
     private static final int ENERGY_PER_BLOCK = 1000;
-    private static final int MAX_ENERGY = 3_000_000;
+    private static final int MAX_ENERGY = 7_000_000;
 
-    public Vajra(Tier tier, Properties properties,
-                 ItemCapability<IEnergyStorage, Void> itemCapability) {
+    public NeoVajra(Tier tier, Properties properties,
+                    ItemCapability<IEnergyStorage, Void> itemCapability) {
         super(tier, CTags.Blocks.VAJRA_MINEABLE,
                 properties.attributes(DiggerItem.createAttributes(
-                    tier, EToolMaterials.VAJRA.getAttackDamageBonus(), 1.6f)));
+                    tier, EToolMaterials.NEOVAJRA.getAttackDamageBonus(), 1.6f)));
     }
 
     @Override
     public @NotNull Component getName(@NotNull ItemStack stack) {
-        return super.getName(stack).copy().withStyle(Style.EMPTY.withColor(0xFF0000));
+        return super.getName(stack).copy().withStyle(Style.EMPTY.withColor(0xFFB3C6));
     }
 
     @Override
@@ -63,6 +66,8 @@ public class Vajra extends DiggerItem {
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable TooltipContext context,
                                 @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+        int mode = stack.getOrDefault(CDataComponents.RADIUS_MODE.get(), 0);
+        int width = (mode == 0 ? 1 : 3);
         int energy = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
         boolean silk = stack.getOrDefault(CDataComponents.SILK_MODE.get(), false);
 
@@ -72,6 +77,10 @@ public class Vajra extends DiggerItem {
         tooltip.add(Component.literal("Silk Touch: ").withStyle(ChatFormatting.DARK_PURPLE)
                 .append(Component.literal(silk ? "On" : "Off")
                         .withStyle(silk ? ChatFormatting.GREEN : ChatFormatting.RED)));
+
+        tooltip.add(Component.literal("Area: ").withStyle(ChatFormatting.DARK_PURPLE)
+                .append(Component.literal(width + "x" + width)
+                        .withStyle(ChatFormatting.GREEN)));
     }
 
     @Override
@@ -120,6 +129,19 @@ public class Vajra extends DiggerItem {
                         true
                 );
             }
+        } else {
+            int currentRadius = Math.max(0, stack.getOrDefault(CDataComponents.RADIUS_MODE.get(), 0));
+            int nextRadius = (currentRadius == 0 ? 1 : 0);
+            stack.set(CDataComponents.RADIUS_MODE.get(), nextRadius);
+
+            if (!level.isClientSide) {
+                int width = nextRadius == 0 ? 1 : 3;
+                player.displayClientMessage(
+                        Component.literal("Area: " + width + "x" + width)
+                                .withStyle(ChatFormatting.GRAY),
+                        true
+                );
+            }
         }
 
         player.getInventory().setChanged();
@@ -147,7 +169,49 @@ public class Vajra extends DiggerItem {
 
     public static List<BlockPos> getBlocksToBeDestroyed(ItemStack stack, BlockPos initialBlockPos, LivingEntity entity) {
         List<BlockPos> positions = new ArrayList<>();
-        positions.add(initialBlockPos);
+        Level level = entity.level();
+
+        int mode = stack.getOrDefault(CDataComponents.RADIUS_MODE.get(), 0);
+        int range = (mode == 0 ? 0 : 1);
+
+        if (range == 0) {
+            positions.add(initialBlockPos);
+            return positions;
+        }
+
+        BlockHitResult traceResult = level.clip(new ClipContext(
+                entity.getEyePosition(1f),
+                entity.getEyePosition(1f).add(entity.getViewVector(1f).scale(6f)),
+                ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE,
+                entity
+        ));
+
+        Direction side;
+
+        if (traceResult.getType() == HitResult.Type.BLOCK && traceResult.getBlockPos().equals(initialBlockPos)) {
+            side = traceResult.getDirection();
+        } else {
+            Vec3 toCenter = Vec3.atCenterOf(initialBlockPos).subtract(entity.getEyePosition(1f));
+            side = Direction.getNearest(toCenter.x, toCenter.y, toCenter.z);
+        }
+
+        for (int dx = -range; dx <= range; dx++) {
+            for (int dy = -range; dy <= range; dy++) {
+                switch (side) {
+                    case UP, DOWN -> {
+                        positions.add(initialBlockPos.offset(dx, 0, dy));
+                    }
+                    case NORTH, SOUTH -> {
+                        positions.add(initialBlockPos.offset(dx, dy, 0));
+                    }
+                    case EAST, WEST -> {
+                        positions.add(initialBlockPos.offset(0, dy, dx));
+                    }
+                }
+            }
+        }
+
         return positions;
     }
 

@@ -16,6 +16,7 @@ public class CItemModelProvider extends ItemModelProvider {
     @Override
     protected void registerModels() {
         handheldItem(CItems.VAJRA.get());
+        handheldItem(CItems.NEOVAJRA.get());
     }
 
 }
