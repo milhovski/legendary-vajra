@@ -75,6 +75,10 @@ dependencies {
     implementation "curse.maven:rhino-416294:6886923"
     implementation "curse.maven:kubejs-238086:5810100"
     implementation "curse.maven:mekanism-268560:6895130"
+
+    //implementation "curse.maven:applied-energistics-2-223794:7027323"
+    //implementation "curse.maven:guideme-1173950:6812025"
+    //implementation "curse.maven:growth-accelerator-tiers-1316818:6918890"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

@@ -53,6 +53,11 @@ public class Vajra extends DiggerItem {
     }
 
     @Override
+    public boolean isCorrectToolForDrops(@NotNull ItemStack stack, @NotNull BlockState state) {
+        return true;
+    }
+
+    @Override
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         return true;
     }
@@ -153,7 +158,7 @@ public class Vajra extends DiggerItem {
 
     @Override
     public float getDestroySpeed(@NotNull ItemStack stack, @NotNull BlockState state) {
-        if (!state.is(CTags.Blocks.VAJRA_MINEABLE)) return super.getDestroySpeed(stack, state);
+        if (state.is(Blocks.BEDROCK) || state.is(Blocks.BARRIER)) return super.getDestroySpeed(stack, state);
         int energy = stack.getOrDefault(CDataComponents.ENERGY.get(), 0);
         return energy >= ENERGY_PER_BLOCK ? 100000F : 3.0F;
     }
